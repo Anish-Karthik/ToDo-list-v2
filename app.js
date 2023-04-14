@@ -11,7 +11,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/ToDoListDB');
+  await mongoose.connect('mongodb+srv://Anish-Karthik:rM7B7nAqDGCs6qE@cluster0.uv82io6.mongodb.net/ToDoListDB');
 }
 main().catch(err => console.log("DB linkage error"));
 
@@ -100,10 +100,6 @@ app.post("/login", async function(req, res) {
   });
 });
 
-app.get("/logout", async function(req, res) {
-  res.redirect("/login");
-});
-
 app.get("/about", function(req, res){
   res.render("about");
 });
@@ -140,10 +136,16 @@ app.get("/:username/:listName", async function(req,res){
     }//user found
   });//user callback
 });
-app.post("/insert", async function(req, res){
+app.post("/insert", async function(req, res) {
   const listName = req.body.listName;
   const item = req.body.newItem;
   const username = req.body.username;
+  console.log(item);
+  if(item === "" || item === " " || item === "  " || item === undefined){
+    console.log("Please enter a valid item");
+    res.redirect("/"+username+"/"+listName);
+    return;
+  }
   const newItem = new Item({
     name: item
   });
@@ -153,7 +155,7 @@ app.post("/insert", async function(req, res){
       foundList.items.push(newItem);
     }
   });
-  foundUser.save();
+  await foundUser.save();
   res.redirect("/"+username+"/"+listName);
 });
 app.post("/delete", async function(req, res){
