@@ -7,15 +7,12 @@
   <div class="box">
     
     <% for (let i=0; i<newListItems.length; i++) { %>
-      <% if(defaultList) {%>
-        <form action="/delete" method="post">
-      <% } else {%>
-        <form action="/delete/<%= listTitle %>" method="post">
-      <% } %>
+      <form action="/delete" method="post">
         <div class="item">
           <input type="checkbox" name="checkbox" value="<%= newListItems[i]._id %>" onChange="this.form.submit()">
           <p><%=  newListItems[i].name  %></p>
         </div>
+        <input type="hidden" name="listName" value="<%= listTitle %>">
       </form>
       <% } %>
     

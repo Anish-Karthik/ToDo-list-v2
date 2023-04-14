@@ -64,22 +64,18 @@ app.post("/", async function(req, res){
 });
 
 app.post("/delete", async function(req, res){
+  const day = date.getDate();
   const checkedItemId = req.body.checkbox;
-  await Item.deleteOne({_id: checkedItemId});
-  res.redirect("/");
+  const listName = req.body.listName;
+  if(listName === day) {
+    await Item.deleteOne({_id: checkedItemId});
+    res.redirect("/");
+  } else {
+    await List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}}).exec();
+    res.redirect("/"+listName);
+  } 
 });
 
-app.post("/delete/:listName", async function(req, res){
-  const checkedItemId = req.body.checkbox;
-  const listName = req.params.listName;
-  await List.findOne({name: listName}).exec().then((foundList) => {
-    console.log(foundList.items.length);
-    foundList.items.pull({_id: checkedItemId});
-    console.log(foundList.items.length);
-    foundList.save();
-  });
-  res.redirect("/"+listName);
-});
 
 app.get("/about", function(req, res){
   res.render("about");
