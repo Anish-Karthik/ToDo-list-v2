@@ -1,5 +1,5 @@
 //jshint esversion:6
-
+require('dotenv/config');
 const express = require("express");
 const bodyParser = require("body-parser");
 const date = require(__dirname + "/date.js");
@@ -10,8 +10,11 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
+const MONGO_USERNAME = process.env.MONGO_USERNAME;
+const MONGO_PASSWORD = process.env.MONGO_PASSWORD;
+
 async function main() {
-  await mongoose.connect('mongodb+srv://Anish-Karthik:rM7B7nAqDGCs6qE@cluster0.uv82io6.mongodb.net/ToDoListDB');
+  await mongoose.connect('mongodb+srv://'+ MONGO_USERNAME +':'+ MONGO_PASSWORD +'@cluster0.uv82io6.mongodb.net/ToDoListDB');
 }
 main().catch(err => console.log("DB linkage error"));
 
