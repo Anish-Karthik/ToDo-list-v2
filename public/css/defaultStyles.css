@@ -1,0 +1,82 @@
+html,
+body {
+  height: 100%;
+}
+h1 {
+  color: #fff;
+  padding: 10px;
+}
+
+.box {
+  max-width: 400px;
+  margin: 50px auto;
+  background: white;
+  border-radius: 5px;
+  box-shadow: 5px 5px 15px -5px rgba(0, 0, 0, 0.3);
+}
+#heading {
+  background-color: #A683E3;
+  text-align: center;
+}
+
+html {
+  font-family: 'helvetica neue';
+  background-image: -webkit-linear-gradient(65deg, #A683E3 20%, #E4E9FD 100%);
+  background-color: #E4E9FD;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  background-image: -webkit-linear-gradient(65deg, #A683E3 20%, #E4E9FD 100%);
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #E4E9FD;
+}
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+}
+
+.form-signin .form-floating:focus-within {
+  z-index: 2;
+}
+
+.top {
+  margin-bottom: -1px;
+  border-bottom-left-radius: 0;    
+  border-bottom-right-radius: 0;
+}
+
+.middle {
+    margin-bottom: -1px;
+    border-radius: 0;
+}
+
+.bottom {
+  margin-bottom: 10px;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.todo {
+    margin: 10px;
+    margin-left: 0;
+    border-color: #E4E9FD;
+    color: #A683E3;
+    background-color: #E4E9FD;
+}
+.todo:hover , .todo:active {
+    color: #fff;
+    background-color: #876db3;
+}
+/* Add red border to invalid form controls */
+.was-validated .is-invalid {
+border-color: #dc3545;
+}
+
+/* Add green border to valid form controls */
+.was-validated .is-valid {
+border-color: #28a745;
+}

@@ -13,7 +13,7 @@ app.use(express.static("public"));
 async function main() {
   await mongoose.connect('mongodb://127.0.0.1:27017/ToDoListDB');
 }
-main().catch(err => console.log("DB  linkage error"));
+main().catch(err => console.log("DB linkage error"));
 
 const itemSchema = new mongoose.Schema({
   name: {
@@ -25,78 +25,154 @@ const listSchema = new mongoose.Schema({
   name: String,
   items: [itemSchema]
 });
+const userSchema = new mongoose.Schema({
+  username: String,
+  password: String,
+  email: String,
+  lists: [listSchema]
+});
+
 const Item = mongoose.model("Item", itemSchema);
 const List = mongoose.model("List", listSchema);
-
+const User = mongoose.model("User", userSchema);
 
 app.get("/", async function(req, res) {
-
-  const foundItems = await Item.find({});
-  if (foundItems.length === 0) {
-    await Item.insertMany(defaultItems).then(() => {
-      console.log("Successfully saved default items to DB.");
-    });
-  }
-  const day = date.getDate();
-  res.render("list", {listTitle: day, newListItems: foundItems, defaultList: true});
+  res.render("signup",{error: false, errorMsg: ""});
 });
-
-app.post("/", async function(req, res){
-  console.log(req.body);
-  const listName = req.body.list;
-  const item = new Item({
-    name: req.body.newItem
-  });
-  if(listName === day) {
-    item.save();
-    res.redirect("/");
-  } else {
-    await List.findOne({name: listName}).exec().then((foundList) => {
-      if(foundList){
-        foundList.items.push(item);
-        foundList.save();
-      }else {
-        console.log("List not found");
-      }
-    });
-    res.redirect("/"+listName);
-  }
-});
-
-app.post("/delete", async function(req, res){
-  const checkedItemId = req.body.checkbox;
-  const listName = req.body.listName;
-  if(listName === day) {
-    await Item.deleteOne({_id: checkedItemId});
-    res.redirect("/");
-  } else {
-    await List.findOneAndUpdate({name: listName}, {$pull: {items: {_id: checkedItemId}}}).exec();
-    res.redirect("/"+listName);
+app.post("/", async function(req, res) {
+  const username = req.body.username;
+  const password = req.body.password;
+  const email = req.body.email;
+  if(username === "" || password === "" || email === ""){
+    console.log("Please fill all the fields");
+    res.render("signup",{error: true, errorMsg: "Please fill all the fields"});
+    return;
   } 
+  await User.findOne({
+    $or: [
+      {username: username},
+      {email: email}
+    ]
+    }).exec().then((foundUser) => {
+    if(foundUser){
+      console.log("Username/Email already exists");
+      res.render("signup",{error: true, errorMsg: "Username/Email already exists"});
+    } else {
+      console.log("User not found");
+      const user = new User({
+        username: username,
+        password: password,
+        email: email,
+        lists: []
+      });
+      user.save();
+      console.log("User created");
+      res.redirect("/login");
+    }
+  });
 });
 
+app.get("/login", async function(req, res) {
+  res.render("login",{error: false, errorMsg: ""});
+});
+app.post("/login", async function(req, res) {
+  const username = req.body.username;
+  const password = req.body.password;
+  await User.findOne({
+    $or: [
+      {username: username},
+      {email: username}
+    ]
+    }).exec().then((foundUser) => {
+    if(foundUser){
+      if(foundUser.password === password){
+        console.log("Login successful");
+        res.redirect("/"+foundUser.username+"/home");
+        return;
+      }
+      console.log("Incorrect password");
+      res.render("login",{error: true, errorMsg: "Incorrect password"});
+      return;
+    }
+    console.log("User not found");
+    res.render("login",{error: true, errorMsg: "User not found"});
+    return;
+  });
+});
+
+app.get("/logout", async function(req, res) {
+  res.redirect("/login");
+});
 
 app.get("/about", function(req, res){
   res.render("about");
 });
 
-app.get("/:listName", async function(req,res){
-  const customListName = _.capitalize(req.params.listName);
-  await List.findOne({name: customListName}).then((foundList) => {
-    if(!foundList) {
-      const list = new List({
-        name: customListName,
-        items: defaultItems
+app.get("/:username/:listName", async function(req,res){
+  const listName = _.capitalize(req.params.listName);
+  const username = req.params.username;
+  await User.findOne({username: username}).exec().then((foundUser) => {
+    if(!foundUser){
+      console.log("User not found");
+      res.redirect("/login");
+    } else{
+      console.log("User found");
+      let foundFlag = false;
+      let listItems = [];
+      foundUser.lists.forEach((foundList) => {
+        if(foundList.name === listName){
+          foundFlag = true;
+          listItems = foundList.items;
+        } 
       });
-      list.save();
-      res.render("list", {listTitle: customListName, newListItems: defaultItems, defaultList: false});
-    } else {
-      res.render("list", {listTitle: foundList.name, newListItems: foundList.items, defaultList: false});
+      if(foundFlag){
+        console.log("List found");
+        res.render("list", {listTitle: listName, newListItems: listItems, username: username});
+      } else {
+        const list = new List({
+          name: listName,
+          items: defaultItems
+        });
+        foundUser.lists.push(list);
+        foundUser.save();
+        res.render("list", {listTitle: list.name, newListItems: list.items, username: username}); 
+      } //list not found
+    }//user found
+  });//user callback
+});
+app.post("/insert", async function(req, res){
+  const listName = req.body.listName;
+  const item = req.body.newItem;
+  const username = req.body.username;
+  const newItem = new Item({
+    name: item
+  });
+  const foundUser = await User.findOne({username: username});
+  foundUser.lists.forEach((foundList) => {
+    if(foundList.name === listName){
+      foundList.items.push(newItem);
     }
   });
+  foundUser.save();
+  res.redirect("/"+username+"/"+listName);
+});
+app.post("/delete", async function(req, res){
+  const listName = req.body.listName;
+  const itemId = req.body.deleteItem;
+  const username = req.body.username;
+  const checkedItemId = req.body.checkbox;
+
+  if(checkedItemId === "on"){
+    await User.findOneAndUpdate(
+      { username: username, "lists.name": listName },
+      { $pull: { "lists.$.items": { _id: itemId } } }
+    );
+  }
+  res.redirect("/"+username+"/"+listName);
 });
 
-app.listen(3000, function() {
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, function() {
   console.log("Server started on port 3000");
 });
 
