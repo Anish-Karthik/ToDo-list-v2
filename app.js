@@ -10,8 +10,8 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
-const MONGO_USERNAME = process.env.MONGO_USERNAME;
-const MONGO_PASSWORD = process.env.MONGO_PASSWORD;
+const MONGO_USERNAME = "Anish-Karthik";
+const MONGO_PASSWORD = "rM7B7nAqDGCs6qE";
 
 async function main() {
   await mongoose.connect('mongodb+srv://'+ MONGO_USERNAME +':'+ MONGO_PASSWORD +'@cluster0.uv82io6.mongodb.net/ToDoListDB');
