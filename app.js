@@ -10,12 +10,12 @@ const app = express();
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
-// const MONGO_USERNAME = process.env.MONGO_USERNAME;
-// const MONGO_PASSWORD = process.env.MONGO_PASSWORD;
+const MONGO_USERNAME = process.env.MONGO_USERNAME;
+const MONGO_PASSWORD = process.env.MONGO_PASSWORD;
 
 async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/ToDoListDB');
-  // await mongoose.connect('mongodb+srv://'+ MONGO_USERNAME +':'+ MONGO_PASSWORD +'@cluster0.uv82io6.mongodb.net/ToDoListDB');
+  // await mongoose.connect('mongodb://127.0.0.1:27017/ToDoListDB');
+  await mongoose.connect('mongodb+srv://'+ MONGO_USERNAME +':'+ MONGO_PASSWORD +'@cluster0.uv82io6.mongodb.net/ToDoListDB');
 }
 main().catch(err => console.log("DB linkage error"));
 
